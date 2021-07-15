@@ -46,7 +46,7 @@
   "exclude": ["dist", "node_modules"],
   "typedocOptions": {
     "entryPoints": ["tsSource/"],
-    "out": "docs",
+    "out": "./docs/",
     "theme": "./node_modules/typedoc-github-wiki-theme/dist"
   }
 }

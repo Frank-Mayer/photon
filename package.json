@@ -11,7 +11,7 @@
   },
   "scripts": {
     "build": "npx tsc -p .",
-    "docs": "npx typedoc src/"
+    "docs": "rm -rf ./docs/* && rm -rf ../photon.wiki/*.md && npx typedoc src/ && mv ./docs/* ../photon.wiki/"
   },
   "repository": {
     "type": "git",
