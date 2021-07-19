@@ -76,11 +76,27 @@ export class Router {
     this.preloadSubpages();
   }
 
+  protected saveData() {
+    if (
+      "connection" in navigator &&
+      "saveData" in (<INavigator>navigator).connection &&
+      (<INavigator>navigator).connection.saveData
+    ) {
+      return true;
+    }
+    return false;
+  }
+
   /**
    * Preload all subpages in cache
    */
   protected preloadSubpages() {
+    if (this.saveData()) {
+      return;
+    }
+
     setTimeout(async () => {
+      const currentSubPageName = this.getCurrentSubPageName();
       for await (const el of this.sitemap) {
         if (el === currentSubPageName) {
           continue;
