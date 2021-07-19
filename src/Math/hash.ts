@@ -1,3 +1,7 @@
+/**
+ * Simple 32 bit hash.
+ * @param allowNegative true to use signed 32 bit integer, false to use unsigned 32 bit integer.
+ */
 export function hash(
   value: string | { toString: () => string },
   allowNegative = false
@@ -21,9 +25,13 @@ export function hash(
   }
 }
 
+/**
+ * SHA-1 160 bit hash.
+ */
 export async function hashAsync(value: string | { toString: () => string }) {
   let hash = 0;
-  new Uint32Array(
+
+  new Uint16Array(
     await crypto.subtle.digest(
       "SHA-1",
       new TextEncoder().encode(
@@ -31,7 +39,7 @@ export async function hashAsync(value: string | { toString: () => string }) {
       )
     )
   ).forEach((val) => {
-    hash << 32;
+    hash << 16;
     hash += val;
   });
 
