@@ -44,8 +44,8 @@ export class DomFrame {
   inject(content: string | Array<HTMLElement>): Promise<boolean> {
     return new Promise((resolve) => {
       this.getClassList().add("loading");
-      if (typeof content == "string") {
-        if (content == this.current) {
+      if (typeof content === "string") {
+        if (content === this.current) {
           this.getClassList().remove("loading");
           resolve(true);
           return;

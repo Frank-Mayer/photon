@@ -82,7 +82,7 @@ export class Router {
   protected preloadSubpages() {
     setTimeout(async () => {
       for await (const el of this.sitemap) {
-        if (el == this.homeSite) {
+        if (el === currentSubPageName) {
           continue;
         }
 
@@ -152,7 +152,7 @@ export class Router {
    *  Converts a given page title to the associated href attribute value
    */
   protected pageTitleToHref(newPage: string): string {
-    return this.homeAsEmpty && newPage == this.homeSite ? "/" : `/${newPage}`;
+    return this.homeAsEmpty && newPage === this.homeSite ? "/" : `/${newPage}`;
   }
 
   /**
@@ -175,7 +175,7 @@ export class Router {
    */
   setPage(newPage: string, doPushState = true): Promise<void> {
     return new Promise<void>((res) => {
-      if (newPage == this.lastLocation) {
+      if (newPage === this.lastLocation) {
         res();
         return;
       }

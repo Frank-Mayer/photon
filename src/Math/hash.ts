@@ -2,9 +2,9 @@ export function hash(
   value: string | { toString: () => string },
   allowNegative = false
 ) {
-  const str = typeof value == "string" ? value : value.toString();
+  const str = typeof value === "string" ? value : value.toString();
   var hash = 0;
-  if (str.length == 0) {
+  if (str.length === 0) {
     return hash;
   }
 
@@ -27,12 +27,13 @@ export async function hashAsync(value: string | { toString: () => string }) {
     await crypto.subtle.digest(
       "SHA-1",
       new TextEncoder().encode(
-        typeof value == "string" ? value : value.toString()
+        typeof value === "string" ? value : value.toString()
       )
     )
   ).forEach((val) => {
     hash << 32;
     hash += val;
   });
+
   return hash;
 }

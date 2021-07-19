@@ -28,7 +28,7 @@ export class ComponentFactory {
           if (attrMap.has(varName)) {
             // check if requested variable is avaliable
             // special variable content -> innerHTML
-            if (attr.name == "content") {
+            if (attr.name === "content") {
               el.innerHTML = attrMap.get(varName)!;
             } else {
               attr.value = attrMap.get(varName)!;
