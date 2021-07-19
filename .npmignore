@@ -1,5 +1,6 @@
 node_modules/
 .npmignore
+docs/
 src/
 .editorconfig
 icon.svg
