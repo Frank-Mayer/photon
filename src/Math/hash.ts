@@ -20,3 +20,19 @@ export function hash(
     return hash + 0x80000000;
   }
 }
+
+export async function hashAsync(value: string | { toString: () => string }) {
+  let hash = 0;
+  new Uint32Array(
+    await crypto.subtle.digest(
+      "SHA-1",
+      new TextEncoder().encode(
+        typeof value == "string" ? value : value.toString()
+      )
+    )
+  ).forEach((val) => {
+    hash << 32;
+    hash += val;
+  });
+  return hash;
+}
