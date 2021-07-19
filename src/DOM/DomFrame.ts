@@ -10,7 +10,8 @@ export class DomFrame {
   private current?: string = undefined;
   private requestOptions: RequestInit = {
     cache: "default",
-    mode: "no-cors",
+    keepalive: false,
+    mode: "same-origin",
   };
 
   /**
@@ -33,13 +34,19 @@ export class DomFrame {
     this.requestOptions = newOptions;
   }
 
+  getRequestOptions(): RequestInit {
+    return this.requestOptions;
+  }
+
   /**
    * Gets the content at the specified url and injects it into the Frame. Returns true if successful, false if not.
    */
   inject(content: string | Array<HTMLElement>): Promise<boolean> {
     return new Promise((resolve) => {
+      this.getClassList().add("loading");
       if (typeof content == "string") {
         if (content == this.current) {
+          this.getClassList().remove("loading");
           resolve(true);
           return;
         }
@@ -54,22 +61,27 @@ export class DomFrame {
                   this.current = content;
                   Components.resolveComponents(this.element)
                     .then(() => {
+                      this.getClassList().remove("loading");
                       resolve(true);
                     })
                     .catch(() => {
+                      this.getClassList().remove("loading");
                       resolve(false);
                     });
                   return;
                 })
                 .catch(() => {
+                  this.getClassList().remove("loading");
                   resolve(false);
                 });
             } else {
+              this.getClassList().remove("loading");
               resolve(false);
               return;
             }
           })
           .catch(() => {
+            this.getClassList().remove("loading");
             resolve(false);
           });
       } else {
@@ -87,9 +99,11 @@ export class DomFrame {
 
         Components.resolveComponents(this.element)
           .then(() => {
+            this.getClassList().remove("loading");
             resolve(true);
           })
           .catch(() => {
+            this.getClassList().remove("loading");
             resolve(false);
           });
       }

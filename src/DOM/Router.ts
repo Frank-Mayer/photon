@@ -72,6 +72,24 @@ export class Router {
     window.addEventListener("popstate", (ev) => {
       this.onPopState(ev);
     });
+
+    this.preloadSubpages();
+  }
+
+  /**
+   * Preload all subpages in cache
+   */
+  protected async preloadSubpages() {
+    for await (const el of this.sitemap) {
+      if (el == this.homeSite) {
+        continue;
+      }
+
+      fetch(el, {
+        ...this.frame.getRequestOptions(),
+        keepalive: false,
+      });
+    }
   }
 
   /**
@@ -184,7 +202,9 @@ export class Router {
               this.siteNameClassPushElement.classList.remove(...this.sitemap);
             }
 
-            this.siteNameClassPushElement.classList.add(newPage);
+            if (this.sitemap.has(newPage)) {
+              this.siteNameClassPushElement.classList.add(newPage);
+            }
 
             this.linkAnchorsToRouter(this.frame.getHtmlRef());
             this.onInject(newPage);
