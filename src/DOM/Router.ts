@@ -153,7 +153,7 @@ export class Router {
    */
   protected getCurrentSubPageName(): string {
     // "https://example.com/info" -> "info"
-    return location.pathname.substr(1);
+    return location.pathname.substr(1) || this.homeSite;
   }
 
   /**
