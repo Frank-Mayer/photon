@@ -2,17 +2,14 @@
 
 Use retro tech at the speed of light towards the future.
 
-<span class="badge-npmversion"><a href="https://npmjs.org/package/@frank-mayer/photon" title="View this project on NPM"><img src="https://img.shields.io/npm/v/@frank-mayer/photon.svg" alt="NPM version" /></a></span>
-<span class="badge-npmdownloads"><a href="https://npmjs.org/package/@frank-mayer/photon" title="View this project on NPM"><img src="https://img.shields.io/npm/dm/@frank-mayer/photon.svg" alt="NPM downloads" /></a></span>
-<span class="badge-daviddm"><a href="https://david-dm.org/bevry/@frank-mayer/photon" title="View the status of this project's dependencies on DavidDM"><img src="https://img.shields.io/david/bevry/@frank-mayer/photon.svg" alt="Dependency Status" /></a></span>
-<span class="badge-daviddmdev"><a href="https://david-dm.org/bevry/@frank-mayer/photon#info=devDependencies" title="View the status of this project's development dependencies on DavidDM"><img src="https://img.shields.io/david/dev/bevry/@frank-mayer/photon.svg" alt="Dev Dependency Status" /></a></span>
-<br class="badge-separator" />
+[![NPM version](https://img.shields.io/npm/v/@frank-mayer/photon.svg)](https://npmjs.org/package/@frank-mayer/photon "View this project on NPM")
+[![NPM downloads](https://img.shields.io/npm/dm/@frank-mayer/photon.svg)](https://npmjs.org/package/@frank-mayer/photon "View this project on NPM")
 
 Photon is a web development platform that takes simplicity over complexity. Great for beginners and experts.
 
 Minimum requirements: HTML5, CSS3, JavaScript (ES6)
 
-Recommended: HTML5, SCSS, TypeScript
+Recommended: HTML5, SCSS, TypeScript (ES6)
 
 ## Keep it simple
 
