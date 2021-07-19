@@ -79,17 +79,19 @@ export class Router {
   /**
    * Preload all subpages in cache
    */
-  protected async preloadSubpages() {
-    for await (const el of this.sitemap) {
-      if (el == this.homeSite) {
-        continue;
-      }
+  protected preloadSubpages() {
+    setTimeout(async () => {
+      for await (const el of this.sitemap) {
+        if (el == this.homeSite) {
+          continue;
+        }
 
-      fetch(el, {
-        ...this.frame.getRequestOptions(),
-        keepalive: false,
-      });
-    }
+        fetch(this.pageTitleToStoreLocation(el), {
+          ...this.frame.getRequestOptions(),
+          keepalive: false,
+        });
+      }
+    }, 500);
   }
 
   /**
@@ -143,7 +145,7 @@ export class Router {
    * Default subpage location: /content/*.html
    */
   protected pageTitleToStoreLocation(newPage: string): string {
-    return `content/${newPage}.html`;
+    return `/content/${newPage}.html`;
   }
 
   /**
