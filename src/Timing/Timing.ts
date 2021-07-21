@@ -10,7 +10,7 @@ export function delay(ms: number): Promise<void> {
 const __retriggerableDelayCache = new Map<number, number>();
 
 /**
- * Sets a timer that will get reseton
+ * Sets a timer that will get reset on the next call
  * @async
  */
 export function retriggerableDelay(callback: () => void, ms: number): void {
