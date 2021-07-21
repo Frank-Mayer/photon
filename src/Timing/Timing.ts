@@ -13,12 +13,19 @@ const __retriggerableDelayCache = new Map<number, number>();
  * Sets a timer that will get reset on the next call
  * @async
  */
-export function retriggerableDelay(callback: () => void, ms: number): void {
-  hashAsync(callback.toString()).then((delayId) => {
-    if (__retriggerableDelayCache.has(delayId)) {
-      clearTimeout(__retriggerableDelayCache.get(delayId));
-    }
-    __retriggerableDelayCache.set(delayId, window.setTimeout(callback, ms));
+export function retriggerableDelay(
+  callback: () => void,
+  ms: number
+): Promise<number> {
+  return new Promise((res) => {
+    hashAsync(callback.toString()).then((delayId) => {
+      if (__retriggerableDelayCache.has(delayId)) {
+        clearTimeout(__retriggerableDelayCache.get(delayId));
+      }
+      const id = window.setTimeout(callback, ms);
+      __retriggerableDelayCache.set(delayId, id);
+      res(id);
+    });
   });
 }
 
