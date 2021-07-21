@@ -105,6 +105,8 @@ export class Router {
         fetch(this.pageTitleToStoreLocation(el), {
           ...this.frame.getRequestOptions(),
           keepalive: false,
+        }).then((v) => {
+          v.text();
         });
       }
     }, 500);
