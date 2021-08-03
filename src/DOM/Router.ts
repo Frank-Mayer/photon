@@ -24,7 +24,7 @@ export class Router {
   /**
    * Currently loaded path on the Frame.
    */
-  protected lastLocation: string;
+  protected lastLocation: string | null;
 
   private sitemap: Set<string>;
 
@@ -55,7 +55,7 @@ export class Router {
     setWindowTitle?: (newPage: string) => string;
   }) {
     this.frame = param.frame;
-    this.lastLocation = "";
+    this.lastLocation = null;
     this.sitemap = param.sitemap;
     this.homeAsEmpty = param.homeAsEmpty ?? true;
     this.setWindowTitle = param.setWindowTitle;
@@ -257,10 +257,18 @@ export class Router {
    * Push a new location to the url without reloading the page.
    */
   protected pushState(newPage: string) {
-    window.history.pushState(
-      { pageTitle: newPage },
-      newPage,
-      this.pageTitleToHref(newPage)
-    );
+    if (this.lastLocation === null) {
+      window.history.replaceState(
+        { pageTitle: newPage },
+        newPage,
+        this.pageTitleToHref(newPage)
+      );
+    } else {
+      window.history.pushState(
+        { pageTitle: newPage },
+        newPage,
+        this.pageTitleToHref(newPage)
+      );
+    }
   }
 }
