@@ -1,4 +1,5 @@
 import { DomFrame } from "./DomFrame";
+import { INavigator } from "../lib/Navigator";
 
 /**
  * The router offers high-performance, asynchronous and cached loading of subpages.
@@ -67,20 +68,23 @@ export class Router {
 
     this.linkAnchorsToRouter(document.body);
 
-    this.setPage(this.getCurrentSubPageName() || this.homeSite);
+    this.setPage(this.getCurrentSubPageName() || this.homeSite, true);
 
-    window.addEventListener("popstate", (ev) => {
-      this.onPopState(ev);
-    });
+    window.addEventListener("popstate", (ev) => this.onPopState(ev));
 
     this.preloadSubpages();
   }
 
   protected saveData() {
+    const nav = <INavigator>(<unknown>navigator);
+
     if (
-      "connection" in navigator &&
-      "saveData" in (<INavigator>navigator).connection &&
-      (<INavigator>navigator).connection.saveData
+      "connection" in nav &&
+      "saveData" in nav.connection &&
+      (nav.connection.saveData ||
+        nav.connection.effectiveType === "slow-2g" ||
+        nav.connection.effectiveType === "2g" ||
+        nav.connection.effectiveType === "3g")
     ) {
       return true;
     }
@@ -190,8 +194,9 @@ export class Router {
   /**
    * Injects the content of a given sub-page into the sub-page Frame.
    * @param newPage has to be listed in the sitemap.
+   * @param setState should the url be set? Default is true.
    */
-  setPage(newPage: string, doPushState = true): Promise<void> {
+  setPage(newPage: string, setState = true): Promise<void> {
     return new Promise<void>((res) => {
       if (newPage === this.lastLocation) {
         res();
@@ -210,7 +215,7 @@ export class Router {
         .inject(this.pageTitleToStoreLocation(newPage))
         .then((r) => {
           if (r) {
-            if (doPushState) {
+            if (setState && this.lastLocation !== newPage) {
               this.pushState(newPage);
             }
 
@@ -258,11 +263,7 @@ export class Router {
    */
   protected pushState(newPage: string) {
     if (this.lastLocation === null) {
-      window.history.replaceState(
-        { pageTitle: newPage },
-        newPage,
-        this.pageTitleToHref(newPage)
-      );
+      this.replaceState(newPage);
     } else {
       window.history.pushState(
         { pageTitle: newPage },
@@ -270,5 +271,16 @@ export class Router {
         this.pageTitleToHref(newPage)
       );
     }
+  }
+
+  /**
+   * Replace the location url without reloading the page.
+   */
+  protected replaceState(newPage: string) {
+    window.history.replaceState(
+      { pageTitle: newPage },
+      newPage,
+      this.pageTitleToHref(newPage)
+    );
   }
 }
