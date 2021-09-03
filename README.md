@@ -4,16 +4,23 @@ Use retro tech at the speed of light towards the future.
 
 [![NPM version](https://img.shields.io/npm/v/@frank-mayer/photon.svg)](https://npmjs.org/package/@frank-mayer/photon "View this project on NPM")
 [![NPM downloads](https://img.shields.io/npm/dm/@frank-mayer/photon.svg)](https://npmjs.org/package/@frank-mayer/photon "View this project on NPM")
+![Types included](https://badgen.net/npm/types/tslib)
 
 Photon is a web development platform that takes simplicity over complexity. Great for beginners and experts.
 
-Minimum requirements: HTML5, CSS3, JavaScript (ES6)
+This framework is not meant to be used for complex web applications, only for simple pages. The purpose is to improve the general performance and simplify the deployment.
 
-Recommended: HTML5, SCSS, TypeScript (ES6)
+## Use Cases
+
+- Blogs
+- Portfolios
+- Info pages
+- Online documentations
+- ...
 
 ## Keep it simple
 
-Do you already know the standard HTML, CSS, and JavaScript stack? Why learn a new one when the existing one is the best? Photon keeps the standard you already know. Components and subpages are defined in separate HTML files.
+Do you already know the standard HTML, CSS, and JavaScript stack? Why learn a new one when the existing one is the best? Photon keeps the standard you already know. Components and subpages are defined in separate HTML files and Photon takes kare of the complicated rest.
 
 ## Speed and performance
 
