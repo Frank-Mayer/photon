@@ -1,4 +1,3 @@
-import { hash } from "../Math/hash";
 import { Components } from "./Components";
 
 /**
@@ -58,7 +57,7 @@ export class DomFrame {
               .then((html) => {
                 this.element.innerHTML = html;
                 this.current = content;
-                
+
                 Components.resolveComponents(this.element)
                   .then(() => {
                     this.getClassList().remove("loading");

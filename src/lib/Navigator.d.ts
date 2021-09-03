@@ -1,9 +1,9 @@
 /**
- * ! experimental
+ * @experimental
  */
-declare class INavigator extends Navigator {
+export interface INavigator extends Navigator {
   /**
-   * ! experimental
+   * @experimental
    */
   connection: {
     downLink: number;
