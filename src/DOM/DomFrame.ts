@@ -41,72 +41,49 @@ export class DomFrame {
   /**
    * Gets the content at the specified url and injects it into the Frame. Returns true if successful, false if not.
    */
-  inject(content: string | Array<HTMLElement>): Promise<boolean> {
+  inject(content: string): Promise<boolean> {
     return new Promise((resolve) => {
       this.getClassList().add("loading");
-      if (typeof content === "string") {
-        if (content === this.current) {
-          this.getClassList().remove("loading");
-          resolve(true);
-          return;
-        }
-
-        fetch(this.basePath + content, this.requestOptions)
-          .then((resp) => {
-            if (resp.ok) {
-              resp
-                .text()
-                .then((html) => {
-                  this.element.innerHTML = html;
-                  this.current = content;
-                  Components.resolveComponents(this.element)
-                    .then(() => {
-                      this.getClassList().remove("loading");
-                      resolve(true);
-                    })
-                    .catch(() => {
-                      this.getClassList().remove("loading");
-                      resolve(false);
-                    });
-                  return;
-                })
-                .catch(() => {
-                  this.getClassList().remove("loading");
-                  resolve(false);
-                });
-            } else {
-              this.getClassList().remove("loading");
-              resolve(false);
-              return;
-            }
-          })
-          .catch(() => {
-            this.getClassList().remove("loading");
-            resolve(false);
-          });
-      } else {
-        this.element.innerHTML = "";
-
-        this.current = JSON.stringify(
-          content.map((el) => {
-            return hash(el.outerHTML);
-          })
-        );
-
-        for (const el of content) {
-          this.element.appendChild(el);
-        }
-
-        Components.resolveComponents(this.element)
-          .then(() => {
-            this.getClassList().remove("loading");
-            resolve(true);
-          })
-          .catch(() => {
-            this.getClassList().remove("loading");
-            resolve(false);
-          });
+      if (content === this.current) {
+        this.getClassList().remove("loading");
+        resolve(true);
+        return;
       }
+
+      fetch(this.basePath + content, this.requestOptions)
+        .then((resp) => {
+          if (resp.ok) {
+            resp
+              .text()
+              .then((html) => {
+                this.element.innerHTML = html;
+                this.current = content;
+                
+                Components.resolveComponents(this.element)
+                  .then(() => {
+                    this.getClassList().remove("loading");
+                    resolve(true);
+                  })
+                  .catch(() => {
+                    this.getClassList().remove("loading");
+                    resolve(false);
+                  });
+                return;
+              })
+              .catch(() => {
+                this.getClassList().remove("loading");
+                resolve(false);
+              });
+          } else {
+            this.getClassList().remove("loading");
+            resolve(false);
+            return;
+          }
+        })
+        .catch(() => {
+          this.getClassList().remove("loading");
+          resolve(false);
+        });
     });
   }
 
