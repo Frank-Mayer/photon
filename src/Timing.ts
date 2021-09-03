@@ -1,4 +1,4 @@
-import { hashAsync } from "../Math/hash";
+import { hashAsync } from "./Math/hash";
 
 /**
  * @async
