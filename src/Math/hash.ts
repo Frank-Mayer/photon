@@ -39,7 +39,7 @@ export async function hashAsync(value: string | { toString: () => string }) {
       )
     )
   ).forEach((val) => {
-    hash << 16;
+    hash <<= 16;
     hash += val;
   });
 
