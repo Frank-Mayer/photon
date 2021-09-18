@@ -1,7 +1,7 @@
 import { Components } from "./Components";
 
 /**
- * Inject code from another html-file into a existing HTMLElement.
+ * Inject code from another html-file into an existing HTMLElement.
  */
 export class DomFrame {
   private readonly element: HTMLElement;
@@ -28,13 +28,18 @@ export class DomFrame {
 
   /**
    * Options to be used at the fetch request.
+   *
+   * mode will always be "same-origin"
    */
   setRequestOptions(newOptions: RequestInit) {
-    this.requestOptions = newOptions;
+    this.requestOptions = { ...newOptions, mode: "same-origin" };
   }
 
+  /**
+   * returns a copy of the request options used for components and subpages
+   */
   getRequestOptions(): RequestInit {
-    return this.requestOptions;
+    return { ...this.requestOptions };
   }
 
   /**

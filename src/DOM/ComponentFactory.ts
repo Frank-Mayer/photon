@@ -29,6 +29,7 @@ export class ComponentFactory {
             // check if requested variable is avaliable
             // special variable content -> innerHTML
             if (attr.name === "content") {
+              // This operation is safe! The content is requested using same-origin policy.
               el.innerHTML = attrMap.get(varName)!;
             } else {
               attr.value = attrMap.get(varName)!;
