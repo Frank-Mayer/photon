@@ -12,9 +12,14 @@ import { INavigator } from "../lib/Navigator";
  * To link an anchor tag to the router, add a "route" attribute with the title of the subpage.
  * ```html
  * <a route="about">About</a>
- * <a route="home">Home</a>
+ * <a route="home" href="/">Home</a>
  * ```
  * If no href attribute is given, it will be added automatically.
+ *
+ * You can specify the trigger of a routing anchor tag using the trigger attribute:
+ * ```html
+ * <a route="info" trigger="mouseenter">Info</a>
+ * ```
  */
 export class Router {
   /**
@@ -128,6 +133,7 @@ export class Router {
 
     for (const anchor of anchors) {
       const route = anchor.getAttribute("route")!;
+      const trigger = anchor.getAttribute("trigger");
 
       if (!this.sitemap.has(route)) {
         console.warn(`Route '${route}' is not in sitemap\n`, anchor);
@@ -139,7 +145,7 @@ export class Router {
       }
 
       anchor.addEventListener(
-        "click",
+        trigger ?? "click",
         (ev) => {
           ev.preventDefault();
           this.setPage(route);
