@@ -5,15 +5,15 @@ import { ComponentFactory, HTMLComponentElement } from "./ComponentFactory";
  *
  * Components are stored in /components/ as html-files.
  *
- * You can specify the Component name using the "name" attribute.
+ * You can specify the Component using the "template" attribute.
  *
- * __Variables__
+ * **Variables**
  *
  * Variables are specified as normal attributes, where the attribute name is the variable name and the attribute value becomes the variable value.
  *
- * innerHTML will be parsed implicitly as content.
+ * `innerHTML` will be parsed implicitly as variable `content`.
  *
- * __Example__
+ * **Example**
  *
  * ``` html
  * <!-- /components/button.html -->
@@ -22,7 +22,7 @@ import { ComponentFactory, HTMLComponentElement } from "./ComponentFactory";
  *
  * ``` html
  * <!-- /index.html -->
- * <component name="button" var1="very" >cool</component>
+ * <component template="button" var1="very">cool</component>
  * ```
  *
  * ``` html
@@ -38,7 +38,7 @@ export class Components {
   private constructor() {}
 
   /**
-   * Function to resolve a components location.
+   * Method to resolve a components location.
    */
   static location(component: string) {
     return `/components/${component}.html`;
@@ -60,21 +60,26 @@ export class Components {
     const updateArr = () => {
       return (componentPlaceholders = Array.from(
         <NodeListOf<HTMLComponentElement>>(
-          root.querySelectorAll("component[name]")
+          root.querySelectorAll("component[template]")
         )
       ));
     };
 
+    // Recursively replace all placeholders
     while (updateArr().length > 0) {
       for (const el of componentPlaceholders!) {
-        const componentName = el.getAttribute("name")!;
+        // Template name of the component to replace
+        const templateName = el.getAttribute("template")!;
 
-        if (this.componentLibrary.has(componentName)) {
-          this.componentLibrary.get(componentName)!.resolve(el);
+        // Already know this template?
+        if (this.componentLibrary.has(templateName)) {
+          // Use known template
+          this.componentLibrary.get(templateName)!.resolve(el);
         } else {
+          // Create and save template
           this.componentLibrary.set(
-            componentName,
-            (await ComponentFactory.new(this.location(componentName))).resolve(
+            templateName,
+            (await ComponentFactory.new(this.location(templateName))).resolve(
               el
             )
           );
