@@ -5,18 +5,18 @@ import { INavigator } from "../lib/Navigator";
  * The router offers high-performance, asynchronous and cached loading of subpages.
  *
  * Standard settings require that your subpages are stored as HTML files in a "content" folder, which is in the root directory of your web server.
- * In addition, only paths of the main domain are routed (this can be overwritten using getCurrentSubPageName and pageTitleToHref).
+ * In addition, only paths of the main domain are routed (this can be overwritten using `getCurrentSubPageName` and `pageTitleToHref`).
  *
- * To do special things after the HTML-injection, you can overwrite onInject (this method is by default empty).
+ * To do special things after the HTML-injection, you can overwrite `onInject` (this method is empty by default).
  *
- * To link an anchor tag to the router, add a "route" attribute with the title of the subpage.
+ * To link an anchor tag to the Router, add a `route` attribute with the name of the subpage.
  * ```html
- * <a route="about">About</a>
- * <a route="home" href="/">Home</a>
+ * <a route="about">Linked to /content/about.html</a>
+ * <a route="home" href="/">Linked to /content/home.html</a>
  * ```
- * If no href attribute is given, it will be added automatically.
+ * If no `href` attribute is given, it will be added automatically using the `pageTitleToHref` method.
  *
- * You can specify the trigger of a routing anchor tag using the trigger attribute:
+ * You can specify the trigger of a routing anchor tag using the `trigger` attribute:
  * ```html
  * <a route="info" trigger="mouseenter">Info</a>
  * ```
@@ -32,24 +32,44 @@ export class Router {
    */
   protected lastLocation: string | null;
 
+  /**
+   * Set of all available subpages
+   */
   private sitemap: Set<string>;
 
+  /**
+   * Set this to `true` if you want the home page to be displayed as website root, `false` if not (default is `true`)
+   */
   protected readonly homeAsEmpty: boolean;
 
+  /**
+   * Home page (default is `"home"`).
+   */
   protected readonly homeSite: string;
+
+  /**
+   * The `HTMLElement` to push the current page title as class (default is `document.body`).
+   */
   protected readonly fallbackSite: string;
+
+  /**
+   * If the title of the tab should be updated with the subpage, put a function in here that returns the title.
+   */
   protected readonly setWindowTitle?: (newPage: string) => string;
 
+  /**
+   * the HTMLElement to push the current page title as class (default is document.body).
+   */
   protected readonly siteNameClassPushElement: HTMLElement;
 
   /**
-   * @param frame Yule.DomFrame to inject the page.
+   * @param frame `photon.DomFrame` to inject the page.
    * @param sitemap Set of all available subpages
-   * @param homeSite home page (default is "home").
-   * @param homeAsEmpty set this to true if you want the home page to be displayed as website root, false if not (default is true)
-   * @param fallbackSite 404 page, default is value of homeSite.
-   * @param siteNameClassPushElement the HTMLElement to push the current page title as class (default is document.body).
-   * @param setWindowTitle if the title of the tab should be updated with the subpage, enter a formatting string here. Placeholder is {}
+   * @param homeSite home page (default is `"home"`).
+   * @param homeAsEmpty set this to `true` if you want the home page to be displayed as website root, `false` if not (default is `true`)
+   * @param fallbackSite 404 page, default is value of `homeSite`.
+   * @param siteNameClassPushElement the `HTMLElement` to push the current page title as class (default is `document.body`).
+   * @param setWindowTitle if the title of the tab should be updated with the subpage, put a function in here that returns the title.
    */
   constructor(param: {
     frame: DomFrame;
@@ -80,7 +100,10 @@ export class Router {
     this.preloadSubpages();
   }
 
-  protected saveData() {
+  /**
+   * Check wether or not to run the router in low data mode
+   */
+  protected static saveData(): boolean {
     const nav = <INavigator>(<unknown>navigator);
 
     if (
@@ -97,10 +120,10 @@ export class Router {
   }
 
   /**
-   * Preload all subpages in cache
+   * Preload all subpages in cache if Router.saveData returns `false`
    */
   protected preloadSubpages() {
-    if (this.saveData()) {
+    if (Router.saveData()) {
       return;
     }
 
@@ -122,7 +145,7 @@ export class Router {
   }
 
   /**
-   * Links every anchor tags to the router
+   * Links every anchor tags to the Router
    */
   private linkAnchorsToRouter(
     root: HTMLElement
@@ -199,8 +222,8 @@ export class Router {
 
   /**
    * Injects the content of a given sub-page into the sub-page Frame.
-   * @param newPage has to be listed in the sitemap.
-   * @param setState should the url be set? Default is true.
+   * @param newPage has to be listed in the `sitemap`.
+   * @param setState should the url be set? Default is `true`.
    */
   setPage(newPage: string, setState = true): Promise<void> {
     return new Promise<void>((res) => {
