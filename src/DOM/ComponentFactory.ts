@@ -1,4 +1,10 @@
-export class HTMLComponentElement extends HTMLElement {}
+/**
+ * `HTMLElement` used as placeholder for Components
+ */
+export interface HTMLComponentElement extends HTMLElement {
+  tagName: "COMPONENT";
+  template: string;
+}
 
 /**
  * Stores information about components to simplify the resolving.
@@ -6,6 +12,9 @@ export class HTMLComponentElement extends HTMLElement {}
 export class ComponentFactory {
   private readonly code: string;
 
+  /**
+   * Use the ComponentFactory to replace a `HTMLComponentElement`
+   */
   resolve(componentEl: HTMLComponentElement) {
     const attrMap = new Map<string, string>();
     for (const attr of componentEl.attributes) {
@@ -53,6 +62,10 @@ export class ComponentFactory {
     this.code = code;
   }
 
+  /**
+   * @async
+   * @constructor
+   */
   static new(location: string): Promise<ComponentFactory> {
     return new Promise((res, rej) => {
       fetch(location)
