@@ -45,8 +45,8 @@
   },
   "exclude": ["dist", "node_modules"],
   "typedocOptions": {
-    "entryPoints": ["tsSource/"],
+    "entryPoints": ["src/"],
     "out": "./docs/",
-    "theme": "./node_modules/typedoc-github-wiki-theme/dist"
+    "theme": "markdown"
   }
 }

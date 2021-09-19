@@ -10,8 +10,8 @@
     "bin": "dist/"
   },
   "scripts": {
-    "build": "npx tsc -p .",
-    "docs": "rm -rf ./docs/* && rm -rf ../photon.wiki/*.md && npx typedoc src/ && mv ./docs/* ../photon.wiki/"
+    "build": "yarn run tsc -p .",
+    "docs": "rm -rf ./docs/* && rm -rf ../photon.wiki/*.md && yarn run typedoc src/ && cp -rp ./docs/* ../photon.wiki/ && mv ../photon.wiki/README.md ../photon.wiki/Home.md"
   },
   "repository": {
     "type": "git",
@@ -30,8 +30,9 @@
   "homepage": "https://github.com/Frank-Mayer/photon#readme",
   "devDependencies": {
     "jsdoc-to-markdown": "^7.0.1",
-    "typedoc": "^0.21.4",
+    "typedoc": "^0.22.4",
     "typedoc-github-wiki-theme": "^0.5.1",
-    "typescript": "^4.3.5"
+    "typedoc-plugin-markdown": "^3.11.0",
+    "typescript": "^4.4.3"
   }
 }
