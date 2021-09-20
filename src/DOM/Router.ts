@@ -1,6 +1,33 @@
 import { DomFrame } from "./DomFrame";
 import { INavigator } from "../lib/Navigator";
 
+type primitive = boolean | number | string;
+
+export type AdditionalOptions = {
+  [key: string]:
+    | primitive
+    | Set<primitive>
+    | Map<primitive, primitive>
+    | Array<primitive>;
+};
+
+export interface RouterOptions {
+  /** `photon.DomFrame` to inject the page. */
+  frame: DomFrame;
+  /** Set of all available subpages */
+  sitemap: Set<string>;
+  /** Home page (default is `"home"`). */
+  homeSite?: string;
+  /** Set this to `true` if you want the home page to be displayed as website root, `false` if not (default is `true`) */
+  homeAsEmpty?: boolean;
+  /** 404 page, default is value of `homeSite`. */
+  fallbackSite?: string;
+  /** The `HTMLElement` to push the current page title as class (default is `document.body`). */
+  siteNameClassPushElement?: HTMLElement;
+  /** If the title of the tab should be updated with the subpage, put a function in here that returns the title. */
+  setWindowTitle?: (newPage: string) => string;
+}
+
 /**
  * The router offers high-performance, asynchronous and cached loading of subpages.
  *
@@ -63,39 +90,30 @@ export class Router {
   protected readonly siteNameClassPushElement: HTMLElement;
 
   /**
-   * @param frame `photon.DomFrame` to inject the page.
-   * @param sitemap Set of all available subpages
-   * @param homeSite home page (default is `"home"`).
-   * @param homeAsEmpty set this to `true` if you want the home page to be displayed as website root, `false` if not (default is `true`)
-   * @param fallbackSite 404 page, default is value of `homeSite`.
-   * @param siteNameClassPushElement the `HTMLElement` to push the current page title as class (default is `document.body`).
-   * @param setWindowTitle if the title of the tab should be updated with the subpage, put a function in here that returns the title.
+   * @param options Router options
    */
-  constructor(param: {
-    frame: DomFrame;
-    sitemap: Set<string>;
-    homeSite?: string;
-    homeAsEmpty?: boolean;
-    fallbackSite?: string;
-    siteNameClassPushElement?: HTMLElement;
-    setWindowTitle?: (newPage: string) => string;
-  }) {
-    this.frame = param.frame;
-    this.lastLocation = null;
-    this.sitemap = param.sitemap;
-    this.homeAsEmpty = param.homeAsEmpty ?? true;
-    this.setWindowTitle = param.setWindowTitle;
+  constructor(
+    options: RouterOptions,
+    additionalOptions: AdditionalOptions = {}
+  ) {
+    Object.assign(this, additionalOptions);
 
-    this.homeSite = param.homeSite ?? "home";
-    this.fallbackSite = param.fallbackSite ?? this.homeSite;
+    this.frame = options.frame;
+    this.lastLocation = null;
+    this.sitemap = options.sitemap;
+    this.homeAsEmpty = options.homeAsEmpty ?? true;
+    this.setWindowTitle = options.setWindowTitle;
+
+    this.homeSite = options.homeSite ?? "home";
+    this.fallbackSite = options.fallbackSite ?? this.homeSite;
     this.siteNameClassPushElement =
-      param.siteNameClassPushElement ?? document.body;
+      options.siteNameClassPushElement ?? document.body;
 
     this.linkAnchorsToRouter(document.body);
 
-    this.setPage(this.getCurrentSubPageName() || this.homeSite, true);
-
     window.addEventListener("popstate", (ev) => this.onPopState(ev));
+
+    this.setPage(this.getCurrentSubPageName() || this.homeSite, true);
 
     this.preloadSubpages();
   }
