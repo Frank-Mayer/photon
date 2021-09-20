@@ -11,6 +11,9 @@ export type AdditionalOptions = {
     | Array<primitive>;
 };
 
+/**
+ * Options for the Router constructor
+ */
 export interface RouterOptions {
   /** `photon.DomFrame` to inject the page. */
   frame: DomFrame;
@@ -31,7 +34,15 @@ export interface RouterOptions {
 /**
  * The router offers high-performance, asynchronous and cached loading of subpages.
  *
- * Standard settings require that your subpages are stored as HTML files in a "content" folder, which is in the root directory of your web server.
+ * Standard settings require your subpages to be stored as HTML files in a "content" folder, which is in the root directory of your web server.
+ * ```
+ * 📦 root
+ * ┗ 📂 content
+ *   ┣ 📜 foo.html
+ *   ┣ 📜 bar.html
+ *   ┗ 📜 baz.html
+ * ```
+ *
  * In addition, only paths of the main domain are routed (this can be overwritten using `getCurrentSubPageName` and `pageTitleToHref`).
  *
  * To do special things after the HTML-injection, you can overwrite `onInject` (this method is empty by default).
@@ -215,7 +226,8 @@ export class Router {
   }
 
   /**
-   * Converts a given page page title into a path
+   * Converts a given page page title into a path.
+   *
    * Default subpage location: /content/*.html
    */
   protected pageTitleToStoreLocation(newPage: string): string {

@@ -1,5 +1,8 @@
 import { AdditionalOptions, Router, RouterOptions } from "./Router";
 
+/**
+ * [ISO-639-1](https://www.iso.org/iso-639-language-codes.html) Language codes
+ */
 export type language =
   | "ab"
   | "aa"
@@ -187,6 +190,9 @@ export type language =
   | "za"
   | "zu";
 
+/**
+ * Options for the `MultiLanguageRouter` constructor
+ */
 export interface MultiLanguageRouterOptions extends RouterOptions {
   /** `Set` of the supported languages */
   languages: Set<language>;
@@ -194,6 +200,30 @@ export interface MultiLanguageRouterOptions extends RouterOptions {
   defaultLanguage: language;
 }
 
+/**
+ * The `MultiLanguageRouter` is an extension of `Router` that supports multilingual pages.
+ *
+ * With the default settings, there must be folders for each language in the content folder, which is located in the root directory. Place all subpages as HTML files in each language folder.
+ *
+ * ```
+ * 📦 root
+ * ┗ 📂 content
+ *   ┣ 📂 en
+ *   ┃ ┣ 📜 foo.html
+ *   ┃ ┣ 📜 bar.html
+ *   ┃ ┗ 📜 baz.html
+ *   ┣ 📂 de
+ *   ┃ ┣ 📜 foo.html
+ *   ┃ ┣ 📜 bar.html
+ *   ┃ ┗ 📜 baz.html
+ *   ┗ 📂 ja
+ *     ┣ 📜 foo.html
+ *     ┣ 📜 bar.html
+ *     ┗ 📜 baz.html
+ * ```
+ *
+ * Apart from that, `MultiLanguageRouter` behaves exactly like [`Router`](https://github.com/Frank-Mayer/photon/blob/main/src/DOM/Router.ts). Look there for more information.
+ */
 export class MultiLanguageRouter extends Router {
   /** Current applied language */
   protected lang?: language;
@@ -217,6 +247,9 @@ export class MultiLanguageRouter extends Router {
     });
   }
 
+  /**
+   * Find language to use
+   */
   public getLang(): language {
     if (!this.lang) {
       // Split url path
@@ -268,6 +301,11 @@ export class MultiLanguageRouter extends Router {
     return `/${this.getLang()}/${newPage}`;
   }
 
+  /**
+   * Converts a given page page title into a path.
+   *
+   * Default subpage location: /content/{language}/*.html
+   */
   protected override pageTitleToStoreLocation(newPage: string): string {
     return `content/${this.getLang()}/${newPage}.html`;
   }
