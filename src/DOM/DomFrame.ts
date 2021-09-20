@@ -167,7 +167,11 @@ export class DomFrame {
   addEventListener(
     type: string,
     listener: EventListenerOrEventListenerObject,
-    options?: boolean | AddEventListenerOptions
+    options: boolean | AddEventListenerOptions = {
+      capture: false,
+      once: false,
+      passive: true,
+    }
   ): void {
     return this.element.addEventListener(type, listener, options);
   }
