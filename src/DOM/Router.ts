@@ -111,7 +111,11 @@ export class Router {
 
     this.linkAnchorsToRouter(document.body);
 
-    window.addEventListener("popstate", (ev) => this.onPopState(ev));
+    window.addEventListener("popstate", (ev) => this.onPopState(ev), {
+      capture: false,
+      once: false,
+      passive: true,
+    });
 
     this.setPage(this.getCurrentSubPageName() || this.homeSite, true);
 
@@ -192,6 +196,7 @@ export class Router {
           this.setPage(route);
         },
         {
+          once: false,
           passive: false,
           capture: true,
         }
