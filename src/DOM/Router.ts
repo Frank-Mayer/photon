@@ -12,7 +12,7 @@ export type AdditionalOptions = {
 };
 
 /**
- * Options for the Router constructor
+ * Options for the [`Router`](https://github.com/Frank-Mayer/photon/wiki/Router) constructor
  */
 export interface RouterOptions {
   /** `photon.DomFrame` to inject the page. */
@@ -45,13 +45,19 @@ export interface RouterOptions {
  *
  * In addition, only paths of the main domain are routed (this can be overwritten using `getCurrentSubPageName` and `pageTitleToHref`).
  *
- * To do special things after the HTML-injection, you can overwrite `onInject` (this method is empty by default).
+ * To do special things after the HTML-injection, you can subscribe to the `injected` event:
+ * ```typescript
+ * router.addEventListener("injected", (ev) => {
+ *   ...
+ * });
+ * ```
  *
- * To link an anchor tag to the Router, add a `route` attribute with the name of the subpage.
+ * To link an anchor tag to the [`Router`](https://github.com/Frank-Mayer/photon/wiki/Router), add a `route` attribute with the name of the subpage.
  * ```html
  * <a route="about">Linked to /content/about.html</a>
  * <a route="home" href="/">Linked to /content/home.html</a>
  * ```
+ *
  * If no `href` attribute is given, it will be added automatically using the `pageTitleToHref` method.
  *
  * You can specify the trigger of a routing anchor tag using the `trigger` attribute:
@@ -99,6 +105,16 @@ export class Router {
    * the HTMLElement to push the current page title as class (default is document.body).
    */
   protected readonly siteNameClassPushElement: HTMLElement;
+
+  protected readonly eventMap: Map<
+    keyof RouterEventMap,
+    Array<
+      [
+        (ev: RouterEventMap[keyof RouterEventMap]) => any,
+        AddEventListenerOptions?
+      ]
+    >
+  > = new Map();
 
   /**
    * @param options Router options
@@ -242,13 +258,6 @@ export class Router {
   }
 
   /**
-   * Load special sub-page content if needed.
-   */
-  protected onInject(_newPage: string): void {
-    return;
-  }
-
-  /**
    * @returns the current subPage name
    */
   getPage() {
@@ -272,7 +281,15 @@ export class Router {
           `Route '${newPage}' not found in sitemap\nLoading fallback: '${this.fallbackSite}'`
         );
 
-        newPage = this.fallbackSite;
+        if (setState && this.lastLocation !== newPage) {
+          this.pushState(newPage);
+        }
+        this.frame.inject(this.pageTitleToStoreLocation(this.fallbackSite));
+        this.siteNameClassPushElement.classList.remove(...this.sitemap);
+        this.linkAnchorsToRouter(this.frame.getHtmlRef());
+        this.lastLocation = this.fallbackSite;
+        this.triggerEvent("injected", false, setState, this.fallbackSite);
+        return;
       }
 
       this.frame
@@ -296,9 +313,10 @@ export class Router {
             }
 
             this.linkAnchorsToRouter(this.frame.getHtmlRef());
-            this.onInject(newPage);
 
             this.lastLocation = newPage;
+
+            this.triggerEvent("injected", false, setState, newPage);
           }
           res();
         })
@@ -347,4 +365,189 @@ export class Router {
       this.pageTitleToHref(newPage)
     );
   }
+
+  public addEventListener<K extends keyof RouterEventMap>(
+    type: K,
+    listener: (ev: RouterEventMap[K]) => any,
+    options?: AddEventListenerOptions
+  ): void {
+    const evArr = this.eventMap.get(type);
+    if (evArr) {
+      evArr.push([listener, options]);
+    } else {
+      this.eventMap.set(type, [[listener, options]]);
+    }
+  }
+
+  public removeEventListener<K extends keyof RouterEventMap>(
+    type: K,
+    listener: (ev: RouterEventMap[K]) => any,
+    options?: AddEventListenerOptions
+  ): void {
+    const evArr = this.eventMap.get(type);
+    if (evArr) {
+      evArr.findIndex((el, i) => {
+        if (
+          Symbol(el[0].toString()) === Symbol(listener.toString()) &&
+          options === el[1]
+        ) {
+          evArr.splice(i, 1);
+        }
+      });
+    }
+  }
+
+  private triggerEvent<K extends keyof RouterEventMap>(
+    type: K,
+    cancelable: boolean,
+    isTrusted: boolean,
+    value: any,
+    originalEvent?: Event
+  ) {
+    const remArr = new Array<number>();
+
+    const evArr = this.eventMap.get(type);
+    if (evArr) {
+      evArr.forEach((evListener, i) => {
+        const passive = evListener[1] ? evListener[1].passive : false;
+        evListener[0](
+          new RouterEvent(
+            this,
+            !passive && cancelable,
+            isTrusted,
+            type,
+            value,
+            originalEvent
+          )
+        );
+
+        if (evListener[1] && evListener[1].once) {
+          remArr.push(i);
+        }
+      });
+
+      for (let i = remArr.length - 1; i >= 0; i--) {
+        evArr.splice(remArr[i]!, 1);
+      }
+    }
+  }
+}
+
+export interface RouterEventMap {
+  injected: RouterEvent<string>;
+}
+
+export enum RouterEventPhase {
+  none,
+  capturingPhase,
+  atTarget,
+  bubblingPhase,
+}
+
+export class RouterEvent<V> {
+  constructor(
+    router: Router,
+    cancelable: boolean,
+    isTrusted: boolean,
+    type: keyof RouterEventMap,
+    value: V,
+    originalEvent?: Event
+  ) {
+    this.cancelable = cancelable;
+    this.composed = false;
+    this.currentTarget = router;
+    this.eventPhase = RouterEventPhase.atTarget;
+    this.isTrusted = isTrusted;
+    this.target = router;
+    this.timeStamp = performance.now();
+    this.type = type;
+    this.originalEvent = originalEvent;
+    this.value = value;
+  }
+
+  readonly value: V;
+
+  originalEvent?: Event;
+
+  /**
+   * Returns true or false depending on how event was initialized. Its return value does not always carry meaning, but true can indicate that part of the operation during which event was dispatched, can be canceled by invoking the preventDefault() method.
+   */
+  readonly cancelable: boolean;
+
+  /**
+   * Returns true or false depending on how event was initialized. True if event invokes listeners past a ShadowRoot node that is the root of its target, and false otherwise.
+   */
+  readonly composed: boolean;
+  /**
+   * Returns the object whose event listener's callback is currently being invoked.
+   */
+  readonly currentTarget: Router;
+  /**
+   * Returns true if preventDefault() was invoked successfully to indicate cancelation, and false otherwise.
+   */
+
+  private _defaultPrevented: boolean = false;
+  public get defaultPrevented(): boolean {
+    return this._defaultPrevented;
+  }
+  private set defaultPrevented(v: boolean) {
+    this._defaultPrevented = v && this.cancelable;
+  }
+
+  /**
+   * Returns the event's phase, which is one of NONE, CAPTURING_PHASE, AT_TARGET, and BUBBLING_PHASE.
+   */
+  readonly eventPhase: number;
+  /**
+   * Returns true if event was dispatched by the user agent, and false otherwise.
+   */
+  readonly isTrusted: boolean;
+  /**
+   * Returns the object to which event is dispatched (its target).
+   */
+  readonly target: Router;
+  /**
+   * Returns the event's timestamp as the number of milliseconds measured relative to the time origin.
+   */
+  readonly timeStamp: DOMHighResTimeStamp;
+  /**
+   * Returns the type of event, e.g. "click", "hashchange", or "submit".
+   */
+  readonly type: keyof RouterEventMap;
+  /**
+   * Returns the invocation target objects of event's path (objects on which listeners will be invoked), except for any nodes in shadow trees of which the shadow root's mode is "closed" that are not reachable from event's currentTarget.
+   */
+  composedPath(): EventTarget[] {
+    if (this.originalEvent) {
+      return this.originalEvent.composedPath();
+    } else {
+      return [];
+    }
+  }
+  /**
+   * If invoked when the cancelable attribute value is true, and while executing a listener for the event with passive set to false, signals to the operation that caused event to be dispatched that it needs to be canceled.
+   */
+  preventDefault(): void {
+    this.defaultPrevented = true;
+  }
+  /**
+   * Invoking this method prevents event from reaching any registered event listeners after the current one finishes running and, when dispatched in a tree, also prevents event from reaching any other objects.
+   */
+  stopImmediatePropagation(): void {
+    if (this.originalEvent) {
+      this.originalEvent.stopImmediatePropagation();
+    }
+  }
+  /**
+   * When dispatched in a tree, invoking this method prevents event from reaching any objects other than the current object.
+   */
+  stopPropagation(): void {
+    if (this.originalEvent) {
+      this.originalEvent.stopPropagation();
+    }
+  }
+  readonly AT_TARGET = RouterEventPhase.atTarget;
+  readonly BUBBLING_PHASE = RouterEventPhase.bubblingPhase;
+  readonly CAPTURING_PHASE = RouterEventPhase.capturingPhase;
+  readonly NONE = RouterEventPhase.none;
 }
