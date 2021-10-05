@@ -4,4 +4,5 @@ docs/
 src/
 .editorconfig
 icon.svg
+docs.cjs
 tsconfig.json
