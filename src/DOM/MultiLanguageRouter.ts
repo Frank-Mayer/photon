@@ -201,7 +201,7 @@ export interface MultiLanguageRouterOptions extends RouterOptions {
 }
 
 /**
- * The `MultiLanguageRouter` is an extension of `Router` that supports multilingual pages.
+ * The `MultiLanguageRouter` is an extension of [`Router`](https://github.com/Frank-Mayer/photon/wiki/Router) that supports multilingual pages.
  *
  * With the default settings, there must be folders for each language in the content folder, which is located in the root directory. Place all subpages as HTML files in each language folder.
  *
