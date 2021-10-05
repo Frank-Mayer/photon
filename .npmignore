@@ -8,3 +8,4 @@ icon.svg
 docs.cjs
 tsconfig.json
 *.ts
+!*.d.ts
