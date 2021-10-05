@@ -3,6 +3,7 @@ node_modules/
 docs/
 src/
 .editorconfig
+.gitattributes
 icon.svg
 docs.cjs
 tsconfig.json
