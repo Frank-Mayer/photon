@@ -1,13 +1,13 @@
 {
   "name": "@frank-mayer/photon",
   "displayName": "photon",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "type": "module",
   "description": "Simple and high performance web frontend framework",
-  "main": "dist/index.js",
-  "types": "dist/",
+  "main": "index.js",
+  "types": "/",
   "directories": {
-    "bin": "dist/"
+    "bin": "/"
   },
   "scripts": {
     "build": "yarn run tsc -p .",
