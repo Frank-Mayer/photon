@@ -11,6 +11,7 @@
   },
   "scripts": {
     "build": "yarn run tsc -p .",
+    "deploy": "yarn run build && mv ./dist/* ./ && rmdir dist && yarn publish",
     "docs": "rm -rf ./docs/* && rm -rf ../photon.wiki/*.md && yarn run typedoc src/ && cp -rp ./docs/* ../photon.wiki/ && mv ../photon.wiki/README.md ../photon.wiki/Home.md"
   },
   "repository": {
