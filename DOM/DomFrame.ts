@@ -21,7 +21,7 @@ export class DomFrame {
    * @param selector DOM query selector for the target Element
    * @param basePath the root location used to resolve the requested files (default is server root)
    */
-  constructor(selector: string, basePath: string = "/") {
+  constructor(selector: string, basePath: string = location.origin + "/") {
     const el = <HTMLElement | null>document.querySelector(selector);
     if (!el) {
       throw new Error(`Element ${selector} not found`);

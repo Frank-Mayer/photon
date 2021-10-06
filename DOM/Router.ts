@@ -110,8 +110,10 @@ export class Router {
    */
   protected readonly siteNameClassPushElement: HTMLElement;
 
+  /** File extension, default is html */
   protected readonly ext: string;
 
+  /** Location to store event listeners */
   protected readonly eventMap: Map<
     keyof RouterEventMap,
     Array<
