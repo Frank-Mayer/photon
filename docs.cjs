@@ -2,26 +2,29 @@ const fs = require("fs");
 const path = require("path");
 
 const dirs = {
-  src: "./src",
+  src: "./index.ts",
   docs: "./docs",
+  dist: "../photon.wiki/",
 };
 
 const typedocCmd = `yarn run typedoc ${dirs.src}`;
 console.log(typedocCmd);
 require("child_process").execSync(typedocCmd);
 
-const docDirs = new Array(dirs.docs);
+for (const f of fs.readdirSync(dirs.dist)) {
+  fs.rmSync(path.join(dirs.dist, f), {
+    force: true,
+    recursive: true,
+    maxRetries: 4,
+    retryDelay: 1000,
+  });
+}
 
-while (docDirs.length > 0) {
-  console.debug(docDirs);
-  const docDirs = docDirs.shift();
-  for (const doc of fs.readdirSync(docPath)) {
-    const docPath = path.join(docPath, doc);
-    const stat = fs.lstatSync(docPath);
-    if (stat.isDirectory()) {
-      processDocs(docPath);
-    } else {
-      console.debug(docPath);
-    }
-  }
+for (const f of fs.readdirSync(dirs.docs)) {
+  fs.cpSync(path.join(dirs.docs, f), path.join(dirs.dist, f), {
+    dereference: true,
+    errorOnExist: false,
+    recursive: true,
+    preserveTimestamps: true,
+  });
 }
