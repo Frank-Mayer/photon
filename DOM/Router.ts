@@ -29,6 +29,8 @@ export interface RouterOptions {
   siteNameClassPushElement?: HTMLElement;
   /** If the title of the tab should be updated with the subpage, put a function in here that returns the title. */
   setWindowTitle?: (newPage: string) => string;
+  /** File extension, default is html */
+  ext?: "html" | "htm" | "xht" | "xhtml" | "sgml" | "php" | "xml";
 }
 
 /**
@@ -42,6 +44,8 @@ export interface RouterOptions {
  *   ┣ 📜 bar.html
  *   ┗ 📜 baz.html
  * ```
+ *
+ * You can change the file extension from html to something else like php using the `ext` setting.
  *
  * In addition, only paths of the main domain are routed (this can be overwritten using `getCurrentSubPageName` and `pageTitleToHref`).
  *
@@ -106,6 +110,8 @@ export class Router {
    */
   protected readonly siteNameClassPushElement: HTMLElement;
 
+  protected readonly ext: string;
+
   protected readonly eventMap: Map<
     keyof RouterEventMap,
     Array<
@@ -135,6 +141,8 @@ export class Router {
     this.fallbackSite = options.fallbackSite ?? this.homeSite;
     this.siteNameClassPushElement =
       options.siteNameClassPushElement ?? document.body;
+
+    this.ext = options.ext ?? "html";
 
     this.linkAnchorsToRouter(document.body);
 
@@ -247,7 +255,7 @@ export class Router {
    * Default subpage location: /content/*.html
    */
   protected pageTitleToStoreLocation(newPage: string): string {
-    return `/content/${newPage}.html`;
+    return `/content/${newPage}.${this.ext}`;
   }
 
   /**
