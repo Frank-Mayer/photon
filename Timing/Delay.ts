@@ -1,4 +1,4 @@
-import { hashAsync } from "./Math/hash";
+import { hashAsync } from "../Math/hash";
 
 /**
  * @async
@@ -25,25 +25,6 @@ export function retriggerableDelay(
       const id = window.setTimeout(callback, ms);
       __retriggerableDelayCache.set(delayId, id);
       res(id);
-    });
-  });
-}
-
-const __doOnceIdempotency = new Set<number>();
-
-/**
- * The doOnce function executes a callback only one time
- * @async
- */
-export function doOnce<T>(callback: () => T, err?: () => any): Promise<T> {
-  return new Promise((res, rej) => {
-    hashAsync(callback.toString()).then((idempotency) => {
-      if (!__doOnceIdempotency.has(idempotency)) {
-        __doOnceIdempotency.add(idempotency);
-        res(callback());
-      } else if (err) {
-        rej(err());
-      }
     });
   });
 }
