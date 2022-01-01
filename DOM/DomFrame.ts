@@ -74,24 +74,15 @@ export class DomFrame {
    */
   inject(content: string): Promise<boolean> {
     return new Promise((resolve) => {
-      this.getClassList().add("loading");
-      if (content === this.current) {
-        this.getClassList().remove("loading");
-        resolve(true);
-        return;
-      }
-
       if (this.permaCache.has(content)) {
         this.element.innerHTML = this.permaCache.get(content)!;
         this.current = content;
 
         Components.resolveComponents(this.element)
           .then(() => {
-            this.getClassList().remove("loading");
             resolve(true);
           })
           .catch(() => {
-            this.getClassList().remove("loading");
             resolve(false);
           });
       } else {
@@ -106,26 +97,21 @@ export class DomFrame {
 
                   Components.resolveComponents(this.element)
                     .then(() => {
-                      this.getClassList().remove("loading");
                       resolve(true);
                     })
                     .catch(() => {
-                      this.getClassList().remove("loading");
                       resolve(false);
                     });
                 })
                 .catch(() => {
-                  this.getClassList().remove("loading");
                   resolve(false);
                 });
             } else {
-              this.getClassList().remove("loading");
               resolve(false);
               return;
             }
           })
           .catch(() => {
-            this.getClassList().remove("loading");
             resolve(false);
           });
       }
