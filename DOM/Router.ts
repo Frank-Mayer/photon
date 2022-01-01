@@ -363,6 +363,9 @@ export class Router {
     );
   }
 
+  /**
+   * The addEventListener() method sets up a function that will be called whenever the specified event is delivered to the target.
+   */
   public addEventListener<K extends keyof RouterEventMap>(
     type: K,
     listener: RouterEventListenerCallback<K> & RouterEventListenerCallback,
@@ -375,6 +378,12 @@ export class Router {
       evArr.push([listener, options]);
     } else {
       this.eventMap.set(type, [[listener, options]]);
+    }
+
+    if (options && options.signal) {
+      options.signal.addEventListener("abort", () => {
+        this.removeEventListener(type, listener, options);
+      });
     }
   }
 
