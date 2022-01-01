@@ -116,12 +116,7 @@ export class Router {
   /** Location to store event listeners */
   protected readonly eventMap: Map<
     keyof RouterEventMap,
-    Array<
-      [
-        (ev: RouterEventMap[keyof RouterEventMap]) => any,
-        AddEventListenerOptions?
-      ]
-    >
+    Array<[RouterEventListenerCallback, AddEventListenerOptions?]>
   > = new Map();
 
   /**
@@ -154,9 +149,11 @@ export class Router {
       passive: true,
     });
 
-    this.setPage(this.getCurrentSubPageName() || this.homeSite, true);
-
-    this.preloadSubpages();
+    this.setPage(this.getCurrentSubPageName() || this.homeSite, true).then(
+      () => {
+        this.preloadSubpages();
+      }
+    );
   }
 
   /**
@@ -168,10 +165,7 @@ export class Router {
     if (
       "connection" in nav &&
       "saveData" in nav.connection &&
-      (nav.connection.saveData ||
-        nav.connection.effectiveType === "slow-2g" ||
-        nav.connection.effectiveType === "2g" ||
-        nav.connection.effectiveType === "3g")
+      nav.connection.saveData
     ) {
       return true;
     }
@@ -186,21 +180,9 @@ export class Router {
       return;
     }
 
-    setTimeout(async () => {
-      const currentSubPageName = this.getCurrentSubPageName();
-      for await (const el of this.sitemap) {
-        if (el === currentSubPageName) {
-          continue;
-        }
-
-        fetch(this.pageTitleToStoreLocation(el), {
-          ...this.frame.getRequestOptions(),
-          keepalive: false,
-        }).then((v) => {
-          v.text();
-        });
-      }
-    }, 500);
+    for (const el of this.sitemap) {
+      this.frame.preload(this.pageTitleToStoreLocation(el));
+    }
   }
 
   /**
@@ -248,7 +230,7 @@ export class Router {
    */
   protected getCurrentSubPageName(): string {
     // "https://example.com/info" -> "info"
-    return location.pathname.substr(1) || this.homeSite;
+    return location.pathname.substring(1) || this.homeSite;
   }
 
   /**
@@ -281,8 +263,13 @@ export class Router {
    */
   setPage(newPage: string, setState = true): Promise<void> {
     return new Promise<void>((res) => {
-      if (newPage === this.lastLocation) {
+      let canceled = false;
+      this.triggerEvent("inject", true, true, newPage, undefined, () => {
+        canceled = true;
         res();
+      });
+
+      if (canceled) {
         return;
       }
 
@@ -378,10 +365,12 @@ export class Router {
 
   public addEventListener<K extends keyof RouterEventMap>(
     type: K,
-    listener: (ev: RouterEventMap[K]) => any,
+    listener: RouterEventListenerCallback<K> & RouterEventListenerCallback,
     options?: AddEventListenerOptions
   ): void {
-    const evArr = this.eventMap.get(type);
+    const evArr = this.eventMap.get(type) as Array<
+      [RouterEventListenerCallback, AddEventListenerOptions?]
+    >;
     if (evArr) {
       evArr.push([listener, options]);
     } else {
@@ -391,7 +380,7 @@ export class Router {
 
   public removeEventListener<K extends keyof RouterEventMap>(
     type: K,
-    listener: (ev: RouterEventMap[K]) => any,
+    listener: RouterEventListenerCallback<K>,
     options?: AddEventListenerOptions
   ): void {
     const evArr = this.eventMap.get(type);
@@ -411,8 +400,9 @@ export class Router {
     type: K,
     cancelable: boolean,
     isTrusted: boolean,
-    value: any,
-    originalEvent?: Event
+    value: RouterEventMap[K]["value"],
+    originalEvent?: Event,
+    cancel?: Function
   ) {
     const remArr = new Array<number>();
 
@@ -427,7 +417,8 @@ export class Router {
             isTrusted,
             type,
             value,
-            originalEvent
+            originalEvent,
+            cancel
           )
         );
 
@@ -444,8 +435,13 @@ export class Router {
 }
 
 export interface RouterEventMap {
+  inject: RouterEvent<string>;
   injected: RouterEvent<string>;
 }
+
+type RouterEventListenerCallback<
+  E extends keyof RouterEventMap = keyof RouterEventMap
+> = (ev: RouterEventMap[E]) => any;
 
 export enum RouterEventPhase {
   none,
@@ -454,14 +450,16 @@ export enum RouterEventPhase {
   bubblingPhase,
 }
 
-export class RouterEvent<V> {
+export class RouterEvent<V extends any = undefined> {
+  cancel: Function | undefined;
   constructor(
     router: Router,
     cancelable: boolean,
     isTrusted: boolean,
     type: keyof RouterEventMap,
     value: V,
-    originalEvent?: Event
+    originalEvent?: Event,
+    cancel?: Function
   ) {
     this.cancelable = cancelable;
     this.composed = false;
@@ -473,6 +471,7 @@ export class RouterEvent<V> {
     this.type = type;
     this.originalEvent = originalEvent;
     this.value = value;
+    this.cancel = cancel;
   }
 
   readonly value: V;
@@ -488,18 +487,21 @@ export class RouterEvent<V> {
    * Returns true or false depending on how event was initialized. True if event invokes listeners past a ShadowRoot node that is the root of its target, and false otherwise.
    */
   readonly composed: boolean;
+
   /**
    * Returns the object whose event listener's callback is currently being invoked.
    */
   readonly currentTarget: Router;
+
+  private _defaultPrevented: boolean = false;
+
   /**
    * Returns true if preventDefault() was invoked successfully to indicate cancelation, and false otherwise.
    */
-
-  private _defaultPrevented: boolean = false;
   public get defaultPrevented(): boolean {
     return this._defaultPrevented;
   }
+
   private set defaultPrevented(v: boolean) {
     this._defaultPrevented = v && this.cancelable;
   }
@@ -508,22 +510,27 @@ export class RouterEvent<V> {
    * Returns the event's phase, which is one of NONE, CAPTURING_PHASE, AT_TARGET, and BUBBLING_PHASE.
    */
   readonly eventPhase: number;
+
   /**
    * Returns true if event was dispatched by the user agent, and false otherwise.
    */
   readonly isTrusted: boolean;
+
   /**
    * Returns the object to which event is dispatched (its target).
    */
   readonly target: Router;
+
   /**
    * Returns the event's timestamp as the number of milliseconds measured relative to the time origin.
    */
   readonly timeStamp: DOMHighResTimeStamp;
+
   /**
    * Returns the type of event, e.g. "click", "hashchange", or "submit".
    */
   readonly type: keyof RouterEventMap;
+
   /**
    * Returns the invocation target objects of event's path (objects on which listeners will be invoked), except for any nodes in shadow trees of which the shadow root's mode is "closed" that are not reachable from event's currentTarget.
    */
@@ -534,12 +541,23 @@ export class RouterEvent<V> {
       return [];
     }
   }
+
   /**
    * If invoked when the cancelable attribute value is true, and while executing a listener for the event with passive set to false, signals to the operation that caused event to be dispatched that it needs to be canceled.
    */
   preventDefault(): void {
-    this.defaultPrevented = true;
+    if (this.cancelable) {
+      if (this.cancel) {
+        this.cancel();
+      }
+      this.defaultPrevented = true;
+    } else {
+      throw new Error(
+        "Unable to preventDefault inside passive event listener invocation."
+      );
+    }
   }
+
   /**
    * Invoking this method prevents event from reaching any registered event listeners after the current one finishes running and, when dispatched in a tree, also prevents event from reaching any other objects.
    */
@@ -548,6 +566,7 @@ export class RouterEvent<V> {
       this.originalEvent.stopImmediatePropagation();
     }
   }
+
   /**
    * When dispatched in a tree, invoking this method prevents event from reaching any objects other than the current object.
    */

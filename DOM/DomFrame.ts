@@ -46,6 +46,29 @@ export class DomFrame {
     return { ...this.requestOptions };
   }
 
+  protected readonly permaCache = new Map<string, string>();
+
+  preload(content: string) {
+    fetch(this.basePath + content, this.requestOptions)
+      .then((resp) => {
+        if (resp.ok) {
+          resp
+            .text()
+            .then((html) => {
+              this.permaCache.set(content, html);
+            })
+            .catch((err) => {
+              console.error(err);
+            });
+        } else {
+          console.error(resp);
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }
+
   /**
    * Gets the content at the specified path on the server and injects it into the Frame. Returns `true` if successful, `false` if not.
    */
@@ -58,40 +81,54 @@ export class DomFrame {
         return;
       }
 
-      fetch(this.basePath + content, this.requestOptions)
-        .then((resp) => {
-          if (resp.ok) {
-            resp
-              .text()
-              .then((html) => {
-                this.element.innerHTML = html;
-                this.current = content;
+      if (this.permaCache.has(content)) {
+        this.element.innerHTML = this.permaCache.get(content)!;
+        this.current = content;
 
-                Components.resolveComponents(this.element)
-                  .then(() => {
-                    this.getClassList().remove("loading");
-                    resolve(true);
-                  })
-                  .catch(() => {
-                    this.getClassList().remove("loading");
-                    resolve(false);
-                  });
-                return;
-              })
-              .catch(() => {
-                this.getClassList().remove("loading");
-                resolve(false);
-              });
-          } else {
+        Components.resolveComponents(this.element)
+          .then(() => {
+            this.getClassList().remove("loading");
+            resolve(true);
+          })
+          .catch(() => {
             this.getClassList().remove("loading");
             resolve(false);
-            return;
-          }
-        })
-        .catch(() => {
-          this.getClassList().remove("loading");
-          resolve(false);
-        });
+          });
+      } else {
+        fetch(this.basePath + content, this.requestOptions)
+          .then((resp) => {
+            if (resp.ok) {
+              resp
+                .text()
+                .then((html) => {
+                  this.element.innerHTML = html;
+                  this.current = content;
+
+                  Components.resolveComponents(this.element)
+                    .then(() => {
+                      this.getClassList().remove("loading");
+                      resolve(true);
+                    })
+                    .catch(() => {
+                      this.getClassList().remove("loading");
+                      resolve(false);
+                    });
+                })
+                .catch(() => {
+                  this.getClassList().remove("loading");
+                  resolve(false);
+                });
+            } else {
+              this.getClassList().remove("loading");
+              resolve(false);
+              return;
+            }
+          })
+          .catch(() => {
+            this.getClassList().remove("loading");
+            resolve(false);
+          });
+      }
     });
   }
 
