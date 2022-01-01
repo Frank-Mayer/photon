@@ -6,7 +6,6 @@ import { Components } from "./Components";
 export class DomFrame {
   private readonly element: HTMLElement;
   private readonly basePath: string;
-  private current?: string = undefined;
 
   /**
    * Options to be used at the fetch request.
@@ -76,7 +75,6 @@ export class DomFrame {
     return new Promise((resolve) => {
       if (this.permaCache.has(content)) {
         this.element.innerHTML = this.permaCache.get(content)!;
-        this.current = content;
 
         Components.resolveComponents(this.element)
           .then(() => {
@@ -93,7 +91,6 @@ export class DomFrame {
                 .text()
                 .then((html) => {
                   this.element.innerHTML = html;
-                  this.current = content;
 
                   Components.resolveComponents(this.element)
                     .then(() => {
@@ -131,7 +128,6 @@ export class DomFrame {
    */
   clear() {
     this.element.innerHTML = "";
-    this.current = undefined;
   }
 
   /**
