@@ -50,8 +50,10 @@ export class ComponentFactory {
       }
     }
 
-    const parent = componentEl.parentElement!;
-    parent.insertBefore(wrapper.children[0]!, componentEl);
+    const parent = componentEl.parentElement;
+    if (parent) {
+      parent.insertBefore(wrapper.children[0]!, componentEl);
+    }
 
     componentEl.remove();
 

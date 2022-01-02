@@ -29,7 +29,7 @@ export interface RouterOptions {
   siteNameClassPushElement?: HTMLElement;
   /** If the title of the tab should be updated with the subpage, put a function in here that returns the title. */
   setWindowTitle?: (newPage: string) => string;
-  /** File extension, default is html */
+  /** File extension, default is html. */
   ext?: "html" | "htm" | "xht" | "xhtml" | "sgml" | "php" | "xml";
 }
 
@@ -70,6 +70,10 @@ export interface RouterOptions {
  * ```
  */
 export class Router {
+  public get element() {
+    return this.frame.element;
+  }
+
   /**
    * The sub-page Frame.
    */
@@ -190,7 +194,9 @@ export class Router {
   /**
    * Links every anchor tags to the Router.
    */
-  public linkAnchorsToRouter(root: HTMLElement): NodeListOf<HTMLAnchorElement> {
+  public linkAnchorsToRouter(
+    root: HTMLElement | ShadowRoot
+  ): NodeListOf<HTMLAnchorElement> {
     const anchors = root.querySelectorAll(
       "a[route]"
     ) as NodeListOf<HTMLAnchorElement>;
@@ -287,6 +293,7 @@ export class Router {
         }
         this.frame.inject(this.pageTitleToStoreLocation(this.fallbackSite));
         this.siteNameClassPushElement.classList.remove(...this.sitemap);
+        this.siteNameClassPushElement.classList.add(this.fallbackSite);
         this.linkAnchorsToRouter(this.frame.getHtmlRef());
         this.lastLocation = this.fallbackSite;
         this.triggerEvent(
@@ -312,10 +319,10 @@ export class Router {
 
             if (this.sitemap.size > 0) {
               this.siteNameClassPushElement.classList.remove(...this.sitemap);
-            }
 
-            if (this.sitemap.has(newPage)) {
-              this.siteNameClassPushElement.classList.add(newPage);
+              if (this.sitemap.has(newPage)) {
+                this.siteNameClassPushElement.classList.add(newPage);
+              }
             }
 
             this.linkAnchorsToRouter(this.frame.getHtmlRef());

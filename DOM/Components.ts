@@ -53,7 +53,9 @@ export class Components {
    * Resolves the components asynchronously and recursively.
    * @param root Target HTMLElement.
    */
-  static async resolveComponents(root: HTMLElement = document.body) {
+  static async resolveComponents(
+    root: HTMLElement | ShadowRoot = document.body
+  ) {
     let componentPlaceholders: Array<HTMLComponentElement>;
 
     // Update the array of component placeholders

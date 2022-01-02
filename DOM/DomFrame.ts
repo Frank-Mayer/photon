@@ -1,10 +1,20 @@
 import { Components } from "./Components";
 
+export interface DomFrameOptions {
+  /** Target Element or DOM query selector for the target Element */
+  element: HTMLElement | string;
+  /** the root location used to resolve the requested files (default is server root) */
+  basePath?: string;
+  /** Encapsulate the DomFrame into ShadowDom. Ignore this option if you don't want encapsulation. */
+  encapsulation?: ShadowRootMode;
+}
+
 /**
  * Inject code from another html-file into an existing HTMLElement.
  */
 export class DomFrame {
-  private readonly element: HTMLElement;
+  public readonly element: HTMLElement;
+  private readonly root: ShadowRoot | HTMLElement;
   private readonly basePath: string;
 
   /**
@@ -16,17 +26,20 @@ export class DomFrame {
     mode: "same-origin",
   };
 
-  /**
-   * @param selector DOM query selector for the target Element
-   * @param basePath the root location used to resolve the requested files (default is server root)
-   */
-  constructor(selector: string, basePath: string = location.origin + "/") {
-    const el = <HTMLElement | null>document.querySelector(selector);
-    if (!el) {
-      throw new Error(`Element ${selector} not found`);
+  constructor(options: DomFrameOptions) {
+    if (typeof options.element === "string") {
+      const el = <HTMLElement | null>document.querySelector(options.element);
+      if (!el) {
+        throw new Error(`Element ${options.element} not found`);
+      }
+      this.element = el;
+    } else {
+      this.element = options.element;
     }
-    this.element = el;
-    this.basePath = basePath;
+    this.root = options.encapsulation
+      ? this.element.attachShadow({ mode: options.encapsulation })
+      : this.element;
+    this.basePath = options.basePath || location.origin + "/";
   }
 
   /**
@@ -74,13 +87,14 @@ export class DomFrame {
   inject(content: string): Promise<boolean> {
     return new Promise((resolve) => {
       if (this.permaCache.has(content)) {
-        this.element.innerHTML = this.permaCache.get(content)!;
+        this.root.innerHTML = this.permaCache.get(content)!;
 
-        Components.resolveComponents(this.element)
+        Components.resolveComponents(this.root)
           .then(() => {
             resolve(true);
           })
-          .catch(() => {
+          .catch((err) => {
+            console.error(err);
             resolve(false);
           });
       } else {
@@ -90,9 +104,9 @@ export class DomFrame {
               resp
                 .text()
                 .then((html) => {
-                  this.element.innerHTML = html;
+                  this.root.innerHTML = html;
 
-                  Components.resolveComponents(this.element)
+                  Components.resolveComponents(this.root)
                     .then(() => {
                       resolve(true);
                     })
@@ -120,14 +134,14 @@ export class DomFrame {
    * >⚠️ Do not call this method with unfiltered user input!
    */
   overwrite(innerHTML: string) {
-    this.element.innerHTML = innerHTML;
+    this.root.innerHTML = innerHTML;
   }
 
   /**
    * Clear the frames content.
    */
   clear() {
-    this.element.innerHTML = "";
+    this.root.innerHTML = "";
   }
 
   /**
@@ -135,7 +149,6 @@ export class DomFrame {
    */
   scrollIntoView(arg?: boolean | ScrollIntoViewOptions): void {
     this.element.scrollIntoView(arg);
-    this.element.style;
   }
 
   /**
@@ -156,7 +169,7 @@ export class DomFrame {
    * Returns a reference to the `HTMLElement` that is controlled by this `DomFrame`
    */
   getHtmlRef() {
-    return this.element;
+    return this.root;
   }
 
   /**
@@ -192,7 +205,7 @@ export class DomFrame {
       passive: true,
     }
   ): void {
-    return this.element.addEventListener(type, listener, options);
+    return this.root.addEventListener(type, listener, options);
   }
 
   /**
