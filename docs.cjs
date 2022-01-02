@@ -56,7 +56,12 @@ for (const f of fs.readdirSync(dirs.docs)) {
 
         fs.writeFileSync(
           path.join(distDir, f === "README.md" ? "Home.md" : f),
-          md.replace(/(?<=[\w\d]+)\.md(?=[\)#])/g, "")
+          md
+            .replace(/(?<=[\w\d]+)\.md(?=[\)#])/g, "")
+            .replace(
+              /(?<=\]\()[\.\/]+[\.\/\S]+(?=\))/g,
+              (str) => "./" + str.split("/").pop()
+            )
         );
       }
     }
