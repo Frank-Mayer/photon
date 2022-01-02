@@ -149,11 +149,13 @@ export class Router {
       passive: true,
     });
 
-    this.setPage(this.getCurrentSubPageName() || this.homeSite, true).then(
-      () => {
-        this.preloadSubpages();
-      }
-    );
+    this.setPage(
+      this.getCurrentSubPageName() || this.homeSite,
+      true,
+      undefined
+    ).then(() => {
+      this.preloadSubpages();
+    });
   }
 
   /**
@@ -186,14 +188,12 @@ export class Router {
   }
 
   /**
-   * Links every anchor tags to the Router
+   * Links every anchor tags to the Router.
    */
-  private linkAnchorsToRouter(
-    root: HTMLElement
-  ): NodeListOf<HTMLAnchorElement> {
-    const anchors = <NodeListOf<HTMLAnchorElement>>(
-      root.querySelectorAll("a[route]")
-    );
+  public linkAnchorsToRouter(root: HTMLElement): NodeListOf<HTMLAnchorElement> {
+    const anchors = root.querySelectorAll(
+      "a[route]"
+    ) as NodeListOf<HTMLAnchorElement>;
 
     for (const anchor of anchors) {
       const route = anchor.getAttribute("route")!;
@@ -212,7 +212,7 @@ export class Router {
         trigger ?? "click",
         (ev) => {
           ev.preventDefault();
-          this.setPage(route);
+          this.setPage(route, true, ev);
         },
         {
           once: false,
@@ -261,10 +261,14 @@ export class Router {
    * @param newPage has to be listed in the `sitemap`.
    * @param setState should the url be set? Default is `true`.
    */
-  setPage(newPage: string, setState = true): Promise<void> {
+  setPage(
+    newPage: string,
+    setState = true,
+    originalEvent?: Event
+  ): Promise<void> {
     return new Promise<void>((res) => {
       let canceled = false;
-      this.triggerEvent("inject", true, true, newPage, undefined, () => {
+      this.triggerEvent("inject", true, newPage, originalEvent, () => {
         canceled = true;
         res();
       });
@@ -285,7 +289,12 @@ export class Router {
         this.siteNameClassPushElement.classList.remove(...this.sitemap);
         this.linkAnchorsToRouter(this.frame.getHtmlRef());
         this.lastLocation = this.fallbackSite;
-        this.triggerEvent("injected", false, setState, this.fallbackSite);
+        this.triggerEvent(
+          "injected",
+          setState,
+          this.fallbackSite,
+          originalEvent
+        );
         return;
       }
 
@@ -313,7 +322,7 @@ export class Router {
 
             this.lastLocation = newPage;
 
-            this.triggerEvent("injected", false, setState, newPage);
+            this.triggerEvent("injected", setState, newPage, originalEvent);
           }
           res();
         })
@@ -322,9 +331,11 @@ export class Router {
 
           if (newPage != this.fallbackSite) {
             console.warn("try fallback...");
-            this.setPage(this.fallbackSite).catch((err) => {
-              console.error(`Fallback site not avaliable!\n${err}`);
-            });
+            this.setPage(this.fallbackSite, setState, originalEvent).catch(
+              (err) => {
+                console.error(`Fallback site not avaliable!\n${err}`);
+              }
+            );
           }
           res();
         });
@@ -333,7 +344,7 @@ export class Router {
 
   protected onPopState(ev: PopStateEvent) {
     if ("pageTitle" in ev.state) {
-      this.setPage(ev.state.pageTitle, false);
+      this.setPage(ev.state.pageTitle, false, ev);
     }
   }
 
@@ -407,7 +418,6 @@ export class Router {
 
   private triggerEvent<K extends keyof RouterEventMap>(
     type: K,
-    cancelable: boolean,
     isTrusted: boolean,
     value: RouterEventMap[K]["value"],
     originalEvent?: Event,
@@ -422,7 +432,7 @@ export class Router {
         evListener[0](
           new RouterEvent(
             this,
-            !passive && cancelable,
+            !passive && typeof cancel === "function",
             isTrusted,
             type,
             value,
