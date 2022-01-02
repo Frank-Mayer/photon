@@ -283,7 +283,49 @@ export class Router {
         return;
       }
 
-      if (!this.sitemap.has(newPage)) {
+      if (this.sitemap.has(newPage)) {
+        this.frame
+          .inject(this.pageTitleToStoreLocation(newPage))
+          .then((r) => {
+            if (r) {
+              if (setState && this.lastLocation !== newPage) {
+                this.pushState(newPage);
+              }
+
+              if (this.setWindowTitle) {
+                document.title = this.setWindowTitle(newPage);
+              }
+
+              if (this.sitemap.size > 0) {
+                this.siteNameClassPushElement.classList.remove(...this.sitemap);
+
+                if (this.sitemap.has(newPage)) {
+                  this.siteNameClassPushElement.classList.add(newPage);
+                }
+              }
+
+              this.linkAnchorsToRouter(this.frame.getHtmlRef());
+
+              this.lastLocation = newPage;
+
+              this.triggerEvent("injected", setState, newPage, originalEvent);
+            }
+            res();
+          })
+          .catch((err) => {
+            console.warn(err);
+
+            if (newPage != this.fallbackSite) {
+              console.warn("try fallback...");
+              this.setPage(this.fallbackSite, setState, originalEvent).catch(
+                (err) => {
+                  console.error(`Fallback site not avaliable!\n${err}`);
+                }
+              );
+            }
+            res();
+          });
+      } else {
         console.error(
           `Route '${newPage}' not found in sitemap\nLoading fallback: '${this.fallbackSite}'`
         );
@@ -291,61 +333,23 @@ export class Router {
         if (setState && this.lastLocation !== newPage) {
           this.pushState(newPage);
         }
-        this.frame.inject(this.pageTitleToStoreLocation(this.fallbackSite));
-        this.siteNameClassPushElement.classList.remove(...this.sitemap);
-        this.siteNameClassPushElement.classList.add(this.fallbackSite);
-        this.linkAnchorsToRouter(this.frame.getHtmlRef());
-        this.lastLocation = this.fallbackSite;
-        this.triggerEvent(
-          "injected",
-          setState,
-          this.fallbackSite,
-          originalEvent
-        );
-        return;
-      }
 
-      this.frame
-        .inject(this.pageTitleToStoreLocation(newPage))
-        .then((r) => {
-          if (r) {
-            if (setState && this.lastLocation !== newPage) {
-              this.pushState(newPage);
-            }
-
-            if (this.setWindowTitle) {
-              document.title = this.setWindowTitle(newPage);
-            }
-
-            if (this.sitemap.size > 0) {
-              this.siteNameClassPushElement.classList.remove(...this.sitemap);
-
-              if (this.sitemap.has(newPage)) {
-                this.siteNameClassPushElement.classList.add(newPage);
-              }
-            }
-
+        this.frame
+          .inject(this.pageTitleToStoreLocation(this.fallbackSite))
+          .then(() => {
+            this.siteNameClassPushElement.classList.remove(...this.sitemap);
+            this.siteNameClassPushElement.classList.add(this.fallbackSite);
             this.linkAnchorsToRouter(this.frame.getHtmlRef());
-
-            this.lastLocation = newPage;
-
-            this.triggerEvent("injected", setState, newPage, originalEvent);
-          }
-          res();
-        })
-        .catch((err) => {
-          console.warn(err);
-
-          if (newPage != this.fallbackSite) {
-            console.warn("try fallback...");
-            this.setPage(this.fallbackSite, setState, originalEvent).catch(
-              (err) => {
-                console.error(`Fallback site not avaliable!\n${err}`);
-              }
+            this.lastLocation = this.fallbackSite;
+            this.triggerEvent(
+              "injected",
+              setState,
+              this.fallbackSite,
+              originalEvent
             );
-          }
-          res();
-        });
+            res();
+          });
+      }
     });
   }
 
