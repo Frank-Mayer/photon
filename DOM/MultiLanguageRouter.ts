@@ -251,7 +251,6 @@ export class MultiLanguageRouter extends Router {
   /** Change language to display */
   public setLang(lang: language, originalEvent?: Event): void {
     if (this.lastLocation && this.languages.has(lang)) {
-      console.debug(`Switching "${this.lastLocation}" to language "${lang}"`);
       this.updateDocLang(lang);
       this.setPage(this.lastLocation, false, originalEvent);
       this.pushState(this.lastLocation);
