@@ -188,7 +188,8 @@ export type language =
   | "yi"
   | "yo"
   | "za"
-  | "zu";
+  | "zu"
+  | string;
 
 /**
  * Options for the `MultiLanguageRouter` constructor
@@ -247,15 +248,23 @@ export class MultiLanguageRouter extends Router {
     });
   }
 
+  /** Change language to display */
+  public setLang(lang: language, originalEvent?: Event): void {
+    if (this.lastLocation && this.languages.has(lang)) {
+      console.debug(`Switching "${this.lastLocation}" to language "${lang}"`);
+      this.updateDocLang(lang);
+      this.setPage(this.lastLocation, false, originalEvent);
+      this.pushState(this.lastLocation);
+    }
+  }
+
   /**
    * Find language to use
    */
   public getLang(): language {
     if (!this.lang) {
       // Split url path
-      const path = location.pathname.split("/").filter((val) => {
-        return !!val;
-      });
+      const path = this.path;
 
       // Get language from url
       const firstPathEl = path.length > 0 ? (path[0] ?? "").toLowerCase() : "";
@@ -292,7 +301,7 @@ export class MultiLanguageRouter extends Router {
   }
 
   protected updateDocLang(lang: language): language {
-    document.head.parentElement!.lang = lang;
+    document.documentElement.lang = lang;
     this.lang = lang;
     return lang;
   }

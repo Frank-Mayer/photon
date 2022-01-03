@@ -163,6 +163,13 @@ export class Router {
   }
 
   /**
+   * Get the current location path as string Array.
+   */
+  public get path() {
+    return location.pathname.split("/").filter((val) => !!val);
+  }
+
+  /**
    * Check wether or not to run the router in low data mode
    */
   protected static saveData(): boolean {
