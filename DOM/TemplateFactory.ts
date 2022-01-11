@@ -1,3 +1,5 @@
+import { Templates } from "./Templates";
+
 /**
  * Stores information about templates to simplify the resolving.
  */
@@ -67,6 +69,8 @@ export class TemplateFactory {
       this.code,
       attrMap
     );
+
+    Templates.resolveTemplates(wrapper);
 
     const parent = templateEl.parentElement;
     if (parent) {
