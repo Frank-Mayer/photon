@@ -1,4 +1,4 @@
-import { Components } from "./Components";
+import { Templates } from "./Templates";
 
 export interface DomFrameOptions {
   /** Target Element or DOM query selector for the target Element */
@@ -28,7 +28,7 @@ export class DomFrame {
 
   constructor(options: DomFrameOptions) {
     if (typeof options.element === "string") {
-      const el = <HTMLElement | null>document.querySelector(options.element);
+      const el = document.querySelector(options.element) as HTMLElement | null;
       if (!el) {
         throw new Error(`Element ${options.element} not found`);
       }
@@ -52,7 +52,7 @@ export class DomFrame {
   }
 
   /**
-   * returns a copy of the request options used for components and subpages
+   * returns a copy of the request options used for templates and subpages
    */
   getRequestOptions(): RequestInit {
     return { ...this.requestOptions };
@@ -89,11 +89,11 @@ export class DomFrame {
       if (this.permaCache.has(content)) {
         this.root.innerHTML = this.permaCache.get(content)!;
 
-        Components.resolveComponents(this.root)
+        Templates.resolveTemplates(this.root)
           .then(() => {
             resolve(true);
           })
-          .catch((err) => {
+          .catch((err: any) => {
             console.error(err);
             resolve(false);
           });
@@ -106,7 +106,7 @@ export class DomFrame {
                 .then((html) => {
                   this.root.innerHTML = html;
 
-                  Components.resolveComponents(this.root)
+                  Templates.resolveTemplates(this.root)
                     .then(() => {
                       resolve(true);
                     })

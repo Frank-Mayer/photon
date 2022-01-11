@@ -173,7 +173,7 @@ export class Router {
    * Check wether or not to run the router in low data mode
    */
   protected static saveData(): boolean {
-    const nav = <INavigator>(<unknown>navigator);
+    const nav = navigator as unknown as INavigator;
 
     if (
       "connection" in nav &&

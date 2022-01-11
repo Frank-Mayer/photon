@@ -20,7 +20,7 @@ This framework is not meant to be used for complex web applications, only for si
 
 ## Keep it simple
 
-Do you already know the standard HTML, CSS, and JavaScript stack? Why learn a new one when the existing one is the best? Photon keeps the standard you already know. Components and subpages are defined in separate HTML files and Photon takes kare of the complicated rest.
+Do you already know the standard HTML, CSS, and JavaScript stack? Why learn a new one when the existing one is the best? Photon keeps the standard you already know. Templates and subpages are defined in separate HTML files and Photon takes kare of the complicated rest.
 
 ## Speed and performance
 

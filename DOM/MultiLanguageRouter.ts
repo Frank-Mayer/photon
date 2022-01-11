@@ -271,9 +271,9 @@ export class MultiLanguageRouter extends Router {
       // Check language valid
       if (
         firstPathEl.length == 2 &&
-        this.languages.has(<language>firstPathEl)
+        this.languages.has(firstPathEl as language)
       ) {
-        this.updateDocLang(<language>firstPathEl);
+        this.updateDocLang(firstPathEl as language);
       } else {
         // Check if navigator language is provided
         const lcc = navigator.language.toLowerCase();
