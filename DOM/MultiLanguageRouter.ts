@@ -248,6 +248,18 @@ export class MultiLanguageRouter extends Router {
     });
   }
 
+  protected override preloadSubpages() {
+    if (MultiLanguageRouter.saveData()) {
+      return;
+    }
+
+    for (const el of this.sitemap) {
+      for (const lang of this.languages) {
+        this.frame.preload(this.pageTitleToStoreLocation(el, lang));
+      }
+    }
+  }
+
   /** Change language to display */
   public setLang(lang: language, originalEvent?: Event): void {
     if (this.lastLocation && this.languages.has(lang)) {
@@ -314,7 +326,10 @@ export class MultiLanguageRouter extends Router {
    *
    * Default subpage location: /content/{language}/*.html
    */
-  protected override pageTitleToStoreLocation(newPage: string): string {
-    return `content/${this.getLang()}/${newPage}.html`;
+  protected override pageTitleToStoreLocation(
+    newPage: string,
+    language?: string
+  ): string {
+    return `content/${language ?? this.getLang()}/${newPage}.html`;
   }
 }

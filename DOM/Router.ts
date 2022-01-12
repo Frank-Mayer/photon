@@ -87,7 +87,7 @@ export class Router {
   /**
    * Set of all available subpages
    */
-  private sitemap: Set<string>;
+  protected sitemap: Set<string>;
 
   /**
    * Set this to `true` if you want the home page to be displayed as website root, `false` if not (default is `true`)
