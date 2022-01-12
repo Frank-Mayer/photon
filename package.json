@@ -1,7 +1,7 @@
 {
   "name": "@frank-mayer/photon",
   "displayName": "photon",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "type": "module",
   "description": "Simple and high performance web frontend framework",
   "main": "index.js",
